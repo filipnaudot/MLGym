@@ -5,6 +5,8 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import random
 
+VERBOSE = False
+
 
 def plot_rewards(agent_return, num_episodes, window):
     num_intervals = int(num_episodes / window)
@@ -18,8 +20,9 @@ def plot_rewards(agent_return, num_episodes, window):
     plt.show()
 
 
-def reshape_obs(observation): 
-    discrete_state = [observation[0], observation[1], observation[4], observation[5], observation[6]]
+def reshape_obs(observation):
+    if VERBOSE: print("OBS:", observation)
+    discrete_state = [int(observation[0]), int(observation[1]), int(observation[4]), int(observation[5]), int(observation[6])]
     return f'{np.asarray(discrete_state)}'
 
 if __name__ == "__main__":
@@ -39,7 +42,6 @@ if __name__ == "__main__":
     num_actions = 0
 
     episode_rewards = [0.0]
-    means = []
     for episode in range(num_episodes):
         
         while True:
@@ -55,11 +57,10 @@ if __name__ == "__main__":
             num_actions += 1
             
             # Update Q-Table
-            if terminated: q_table[reshape_obs(observation)][action] += alpha * ((reward + gamma * np.max(q_table[reshape_obs(new_observation)])) - q_table[reshape_obs(observation)][action])
+            if terminated: q_table[reshape_obs(observation)][action] += alpha * (reward + gamma * np.max(q_table[reshape_obs(new_observation)]) - q_table[reshape_obs(observation)][action])
             else: q_table[reshape_obs(observation)][action] += alpha * (reward - q_table[reshape_obs(observation)][action])
             
             if terminated or truncated:
-                if (episode+1)%100 == 0: means.append(round(np.mean(episode_rewards[-101:-1]), 1))
                 episode_rewards.append(0.0)
                 observation, info = env.reset()
                 break

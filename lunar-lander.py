@@ -5,8 +5,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import random
 
-VERBOSE = False
-
+VERBOSE_LEVEL = 1
 
 def plot_rewards(agent_return, num_episodes, window):
     num_intervals = int(num_episodes / window)
@@ -21,9 +20,17 @@ def plot_rewards(agent_return, num_episodes, window):
 
 
 def reshape_obs(observation):
-    if VERBOSE: print("OBS:", observation)
-    discrete_state = [int(observation[0]), int(observation[1]), int(observation[4]), int(observation[5]), int(observation[6])]
-    return f'{np.asarray(discrete_state)}'
+    """
+    observation[0], observation[1]: the coordinates of the lander in x & y
+    observation[2], observation[3]: the landers linear velocities in x & y
+    observation[4]                : the landers angle
+    observation[5]                : the landers angular velocity
+    observation[6], observation[7]: booleans indicating if each leg is in contact with the ground or not
+    """
+    if VERBOSE_LEVEL > 1: print("-------------------------------------------------------------------"); print("OBS:", observation)
+    if VERBOSE_LEVEL > 1: print("Mod OBS:", [round(observation[0], 4), round(observation[1], 4), round(observation[4],2), round(observation[5],2), observation[6], observation[7]])
+    discrete_state = [round(observation[4],2), round(observation[5],2), observation[6], observation[7]]
+    return f'{discrete_state}'
 
 if __name__ == "__main__":
     env = gym.make("LunarLander-v2")#, render_mode="human")
@@ -32,18 +39,17 @@ if __name__ == "__main__":
     epsilon = 0.2
     min_epsilon = 0.01
     epsilon_decay = 0.999
-    gamma = 0.99
+    gamma = 0.9
     alpha = 0.1
 
     num_episodes = 10000
 
     observation, info = env.reset()
-    q_table = q = defaultdict(lambda: np.zeros(env.action_space.n))
-    num_actions = 0
+    q_table = defaultdict(lambda: np.zeros(env.action_space.n))
 
     episode_rewards = [0.0]
     for episode in range(num_episodes):
-        
+        if VERBOSE_LEVEL > 0: print(f"\nEPISODE: {episode}\nQ Size: {len(q_table)}\n")
         while True:
             # Find new action with epsilon-greedy
             action = np.argmax(q_table[reshape_obs(observation)])
@@ -54,7 +60,6 @@ if __name__ == "__main__":
             # Take action and get reward
             new_observation, reward, terminated, truncated, info = env.step(action)
             episode_rewards[-1] += reward
-            num_actions += 1
             
             # Update Q-Table
             if terminated: q_table[reshape_obs(observation)][action] += alpha * (reward + gamma * np.max(q_table[reshape_obs(new_observation)]) - q_table[reshape_obs(observation)][action])

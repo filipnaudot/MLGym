@@ -5,7 +5,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import random
 
-VERBOSE_LEVEL = 1
+VERBOSE_LEVEL = 2
 
 def plot_rewards(agent_return, num_episodes, window):
     num_intervals = int(num_episodes / window)
@@ -27,9 +27,11 @@ def reshape_obs(observation):
     observation[5]                : the landers angular velocity
     observation[6], observation[7]: booleans indicating if each leg is in contact with the ground or not
     """
-    if VERBOSE_LEVEL > 1: print("-------------------------------------------------------------------"); print("OBS:", observation)
-    if VERBOSE_LEVEL > 1: print("Mod OBS:", [round(observation[0], 4), round(observation[1], 4), round(observation[4],2), round(observation[5],2), observation[6], observation[7]])
+    if VERBOSE_LEVEL > 1: print(f"-------------------------------------------------------------------\nOBS: {observation}")
+    
     discrete_state = [round(observation[4],2), round(observation[5],2), observation[6], observation[7]]
+    if VERBOSE_LEVEL > 1: print(f"Mod OBS: {discrete_state}")
+    
     return f'{discrete_state}'
 
 if __name__ == "__main__":
